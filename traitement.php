@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 if(isset($_GET["action"])){
     switch($_GET["action"]){
@@ -22,7 +23,7 @@ if(isset($_GET["action"])){
                     //dans user, resultat de la requete
                     $user = $requeteExist->fetch();
     
-                    //si l'utilisateur existe
+                    //si l'utilisateur existe deja
                     if($user){
                         header("Location: register.php"); exit;
                     } else{
@@ -35,7 +36,7 @@ if(isset($_GET["action"])){
                                 //hache le mdp
                                 "password" => password_hash($pass1, PASSWORD_DEFAULT)
                             ]);
-                            header("location: index.php"); exit;
+                            header("location: home.php"); exit;
                         } else{
                             //msg : mdp non identiques ou trop courts
                         }
@@ -54,13 +55,42 @@ if(isset($_GET["action"])){
                 $pdo = new PDO("mysql:host=localhost;dbname=session_laure;charset=utf8", "root", "");
     
                 //filtrer les champs
-                $pseudo= filter_input(INPUT_POST, "pseudo", FILTER_SANITIZE_SPECIAL_CHARS);
                 $email= filter_input(INPUT_POST, "email", FILTER_SANITIZE_SPECIAL_CHARS, FILTER_VALIDATE_EMAIL);
                 $password= filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
+
+                if($email && $password){
+                    $requeteMail = $pdo->prepare("SELECT * FROM user WHERE email = :email");
+                    $requeteMail->execute(["email" => $email]);
+                    $user = $requeteMail->fetch();
+
+
+                    //si l'utilisateur existe
+                    if($user){
+                        $hash = $user["password"];
+                        //si les empreintes numeriques correspondent
+                        if(password_verify($password, $hash)){
+                            $_SESSION["user"] = $user; //stocke tout l'utilisateur en session
+                            header("location:home.php"); exit;
+                        } else{
+                            header("location: login.php"); exit;
+                        }
+                    } else {
+                        header("location:login.php"); exit;
+                    }
+                }
             }
 
             header("location:login.php"); exit;
 
          break;
+         case "profile":
+            header("location:profile.php"); exit;
+        break;
+
+        //deconnecte
+        case "logout":
+            unset($_SESSION["user"]); 
+            header("location:home.php"); exit;
+        break;
     }
 }

@@ -1,3 +1,5 @@
+<?php session_start(); ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,10 +8,24 @@
     <title>Document</title>
 </head>
 <body>
+    <?php
+    var_dump($_SESSION);
+    //si je suis connectée
+    if(isset($_SESSION["user"])){ ?>
+        <a href="traitement.php?action=logout">Se déconnecter</a>
+        <a href="traitement.php?action=profile">Mon profil</a>
+    <?php  } else { ?>
+        <a href="traitement.php?action=login">Se connecter</a>
+        <a href="traitement.php?action=register">S'inscrire</a>
+<?php
+    }
+?>
+
     <h1>ACCUEIL</h1>
-
-    <a href="login.php">Se connecter</a>
-    <a href="register.php">S'inscrire</a>
-
+<?php //si je suis connectée
+    if(isset($_SESSION["user"])){
+        echo "<p>Bienvenue ".$_SESSION["user"]["pseudo"]."</p>";
+    }
+?>
 </body>
 </html>
